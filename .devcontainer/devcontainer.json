@@ -1,16 +1,10 @@
 {
   "image": "kalilinux/kali-rolling",
   "containerUser": "root",
-
   "forwardPorts": [6080],
   "portsAttributes": {
-    "6080": {
-      "label": "Kali noVNC",
-      "onAutoForward": "openBrowser"
-    }
+    "6080": { "label": "Kali noVNC", "onAutoForward": "openBrowser" }
   },
-
-  "postCreateCommand": "apt update && DEBIAN_FRONTEND=noninteractive apt install -y xfce4 tigervnc-standalone-server novnc websockify dbus-x11 xterm && mkdir -p /root/.vnc && printf '#!/bin/sh\\nunset SESSION_MANAGER\\nunset DBUS_SESSION_BUS_ADDRESS\\nexec startxfce4\\n' > /root/.vnc/xstartup && chmod +x /root/.vnc/xstartup",
-
-  "postStartCommand": "bash -lc 'vncserver -kill :1 >/dev/null 2>&1 || true; vncserver :1 -geometry 1366x768 -localhost yes -SecurityTypes None; pkill -f novnc_proxy >/dev/null 2>&1 || true; pkill -f websockify >/dev/null 2>&1 || true; if [ -x /usr/share/novnc/utils/novnc_proxy ]; then /usr/share/novnc/utils/novnc_proxy --vnc localhost:5901 --listen 6080 & elif [ -x /usr/share/novnc/utils/launch.sh ]; then /usr/share/novnc/utils/launch.sh --vnc localhost:5901 --listen 6080 & else websockify --web /usr/share/novnc/ 6080 localhost:5901 & fi'"
+  "postCreateCommand": "apt update && DEBIAN_FRONTEND=noninteractive apt install -y xfce4 xfce4-terminal tigervnc-standalone-server novnc websockify dbus-x11 iproute2",
+  "postStartCommand": "bash -lc 'mkdir -p /root/.vnc && printf \"#!/bin/sh\\nunset SESSION_MANAGER\\nunset DBUS_SESSION_BUS_ADDRESS\\nexec startxfce4\\n\" > /root/.vnc/xstartup && chmod +x /root/.vnc/xstartup && vncserver -kill :1 >/dev/null 2>&1 || true; rm -f /tmp/.X1-lock /root/.vnc/*:1.pid; pkill -f websockify >/dev/null 2>&1 || true; vncserver :1 -geometry 1366x768 -localhost yes -SecurityTypes None; nohup websockify --web /usr/share/novnc 0.0.0.0:6080 localhost:5901 >/root/novnc.log 2>&1 &'"
 }
